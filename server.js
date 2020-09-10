@@ -1,11 +1,32 @@
 #!/usr/bin/env node
-var prerender = require('./lib');
+cool().then(function () {
+     console.log("Promise Resolved");
+}).catch(function () {
+     console.log("Promise Rejected");
+});
 
-var server = prerender();
+async function cool() {
+	const chromium = require('chromium');
+	chromium.install()
 
-server.use(prerender.sendPrerenderHeader());
+	console.log("before");
+	while(!chromium.path) {
+		console.log("sleep")
+		await new Promise(r => setTimeout(r, 20000));
+	}
+	console.log("after");
+
+	var prerender = require('./lib');
+
+	var server = prerender({
+    		chromeLocation: chromium.path
+	});
+
+	server.use(prerender.sendPrerenderHeader());
 // server.use(prerender.blockResources());
-server.use(prerender.removeScriptTags());
-server.use(prerender.httpHeaders());
+	server.use(prerender.removeScriptTags());
+	server.use(prerender.httpHeaders());
 
-server.start();
+	server.start();
+	return true;
+}
